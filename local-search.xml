@@ -8,7 +8,7 @@
     <link href="/2026/03/10/Nignx-UI%E5%A4%87%E4%BB%BD%E6%9C%AA%E6%8E%88%E6%9D%83%E4%B8%8B%E8%BD%BD%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0(CVE-2026-27944)/"/>
     <url>/2026/03/10/Nignx-UI%E5%A4%87%E4%BB%BD%E6%9C%AA%E6%8E%88%E6%9D%83%E4%B8%8B%E8%BD%BD%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0(CVE-2026-27944)/</url>
     
-    <content type="html"><![CDATA[<h4 id="一、漏洞描述"><a href="#一、漏洞描述" class="headerlink" title="一、漏洞描述"></a>一、漏洞描述</h4><p>Nginx UI 是一款基于Go语言开发的开源Web管理界面，旨在为Nginx服务器提供图形化配置管理、SSL证书维护及日志查看等功能。该工具通过可视化界面简化了Nginx的配置与运维管理。</p><p>在 <strong>2.3.3版本之前</strong>，Nginx UI存在一处严重的安全设计缺陷：&#x2F;api&#x2F;backup接口未配置任何身份认证中间件，且在处理备份请求时，将AES-256加密密钥及初始化向量（IV）直接明文写入HTTP响应头 X-Backup-Security中返回给客户端。</p><p>FOFA:</p><figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf"><span class="hljs-attribute">title</span><span class="hljs-operator">=</span><span class="hljs-string">&quot;Nginx UI&quot;</span><br></code></pre></td></tr></table></figure><img src="images/image-20260310091313512.png" alt="image-20260310091313512" style="zoom:80%;" /><p>利用POC：</p><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros"><span class="hljs-built_in">GET</span> /api/backup<br></code></pre></td></tr></table></figure><p><img src="/images/image-20260310091006666.png" alt="image-20260310091006666"></p><p>解密脚本：</p><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">https:<span class="hljs-regexp">//gi</span>thub.com<span class="hljs-regexp">/0xJacky/</span>nginx-ui<span class="hljs-regexp">/security/</span>advisories/GHSA-g9w5-qffc-<span class="hljs-number">6762</span><br></code></pre></td></tr></table></figure><p><img src="C:\Users\shadow\AppData\Roaming\Typora\typora-user-images\image-20260310092556318.png" alt="image-20260310092556318"></p><p>泄露数据库信息，配置文件信息</p>]]></content>
+    <content type="html"><![CDATA[<h4 id="一、漏洞描述"><a href="#一、漏洞描述" class="headerlink" title="一、漏洞描述"></a>一、漏洞描述</h4><p>Nginx UI 是一款基于Go语言开发的开源Web管理界面，旨在为Nginx服务器提供图形化配置管理、SSL证书维护及日志查看等功能。该工具通过可视化界面简化了Nginx的配置与运维管理。</p><p>在 <strong>2.3.3版本之前</strong>，Nginx UI存在一处严重的安全设计缺陷：&#x2F;api&#x2F;backup接口未配置任何身份认证中间件，且在处理备份请求时，将AES-256加密密钥及初始化向量（IV）直接明文写入HTTP响应头 X-Backup-Security中返回给客户端。</p><p>FOFA:</p><figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf"><span class="hljs-attribute">title</span><span class="hljs-operator">=</span><span class="hljs-string">&quot;Nginx UI&quot;</span><br></code></pre></td></tr></table></figure><p><img src="/images/image-20260310091313512.png" alt="image-20260310091313512"></p><p>利用POC：</p><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros"><span class="hljs-built_in">GET</span> /api/backup<br></code></pre></td></tr></table></figure><p><img src="/images/image-20260310091006666.png" alt="image-20260310091006666"></p><p>解密脚本：</p><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">https:<span class="hljs-regexp">//gi</span>thub.com<span class="hljs-regexp">/0xJacky/</span>nginx-ui<span class="hljs-regexp">/security/</span>advisories/GHSA-g9w5-qffc-<span class="hljs-number">6762</span><br></code></pre></td></tr></table></figure><p><img src="/images/image-20260310092556318.png" alt="image-20260310092556318"></p><p>泄露数据库信息，配置文件信息</p>]]></content>
     
     
     <categories>
@@ -78,9 +78,9 @@
     
     <tags>
       
-      <tag>实战利用</tag>
-      
       <tag>sign</tag>
+      
+      <tag>实战利用</tag>
       
       <tag>防重放</tag>
       
@@ -134,9 +134,9 @@
     
     <tags>
       
-      <tag>PDF.js</tag>
-      
       <tag>实战利用</tag>
+      
+      <tag>PDF.js</tag>
       
     </tags>
     
